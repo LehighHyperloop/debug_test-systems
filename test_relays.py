@@ -8,7 +8,9 @@ import time
 import json
 import sys
 
-subsystems = {"fan": ["STOPPED", "RUNNING"], "compressor": ["STOPPED", "RUNNING"], "wheels": ["UP", "DOWN"], "braking": ["OFF", "ON"], "levitation": ["STOPPED", "RUNNING"], "propulsion": ["STOPPED", "RUNNING"]}
+subsystems = {"fan": ["STOPPED", "RUNNING"], "compressor": ["STOPPED", "RUNNING"], \
+                "wheels": ["UP", "DOWN"], "braking": ["OFF", "ON"], "levitation": \
+                ["STOPPED", "RUNNING"], "propulsion": ["STOPPED", "RUNNING"]}
 expected = {"fan": None, "compressor": None, "wheels": None, "braking": None, "levitation": None, "propulsion": None}
 actual = {"fan": None, "compressor": None, "wheels": None, "braking": None, "levitation": None, "propulsion": None}
 
@@ -24,7 +26,7 @@ for system in subsystems.keys():
 #handle response. Will later check if the reponse is good
 def on_message(mosq, obj, msg):
     topic_split = msg.topic.split("/")
-    if topic_split[len(topic_split) - 2] == "set": #check if last space in topic is "set"
+    if topic_split[len(topic_split) - 1] == "set": #check if last space in topic is "set"
         return #ignore own set messages
 
     print msg.topic, "RESPONSE:", msg.payload
@@ -41,14 +43,14 @@ command_dict = {}
 try:
     while True:
         subsystem = random.choice(subsystems.keys())
-        # if subsystem == "propulsion" or subsystem == "compressor": #NOTE: REMOVE
-        #     continue
+        if subsystem == "propulsion":  
+            continue
         command = random.choice(subsystems[subsystem])
         command_dict["t_state"] = command
         print "Setting {} to state {}".format(subsystem, command)
         expected[subsystem] = command
         start = time.time()
-        client.publish("subsystem/" + subsystem + "/set/", json.dumps(command_dict))
+        client.publish("subsystem/" + subsystem + "/set", json.dumps(command_dict))
         while True:
             if expected[subsystem] == actual[subsystem]:
                 break
@@ -57,9 +59,9 @@ try:
             time.sleep(.1)
 
         if expected[subsystem] == actual[subsystem]:
-            print(subsystem + "->" + command + " [GOOD]")
+            print("[GOOD] "+ subsystem + "->" + command)
         else:
-            print(subsystem + "->" + command + " [BAD]")
+            print("[BAD] " + subsystem + "->" + command)
             sys.exit()
 
 except KeyboardInterrupt:

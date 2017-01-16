@@ -41,8 +41,8 @@ command_dict = {}
 try:
     while True:
         subsystem = random.choice(subsystems.keys())
-        if subsystem == "propulsion" or subsystem == "compressor": #NOTE: REMOVE
-            continue
+        # if subsystem == "propulsion" or subsystem == "compressor": #NOTE: REMOVE
+        #     continue
         command = random.choice(subsystems[subsystem])
         command_dict["t_state"] = command
         print "Setting {} to state {}".format(subsystem, command)
